@@ -299,13 +299,13 @@ apigClientFactory.newClient = function (config) {
     };
     
     
-    apigClient.currentUserGet = function (params, body, additionalParams) {
+    apigClient.currentUserPost = function (params, body, additionalParams) {
         if(additionalParams === undefined) { additionalParams = {}; }
         
         apiGateway.core.utils.assertParametersDefined(params, [], ['body']);
         
-        var currentUserGetRequest = {
-            verb: 'get'.toUpperCase(),
+        var currentUserPostRequest = {
+            verb: 'post'.toUpperCase(),
             path: pathComponent + uritemplate('/current_user').expand(apiGateway.core.utils.parseParametersToObject(params, [])),
             headers: apiGateway.core.utils.parseParametersToObject(params, []),
             queryParams: apiGateway.core.utils.parseParametersToObject(params, []),
@@ -313,7 +313,7 @@ apigClientFactory.newClient = function (config) {
         };
         
         
-        return apiGatewayClient.makeRequest(currentUserGetRequest, authType, additionalParams, config.apiKey);
+        return apiGatewayClient.makeRequest(currentUserPostRequest, authType, additionalParams, config.apiKey);
     };
     
     

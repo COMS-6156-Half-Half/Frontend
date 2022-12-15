@@ -2,6 +2,9 @@ var apigClient = apigClientFactory.newClient({
     region: 'us-east-1'
 });
 
+function Renderwelcome(){
+  document.getElementById('welcome message').innerHTML = 'Welcome ' + localStorage.getItem('username') + '!';
+}
 
 // 
 function Renderlogin(){
@@ -37,22 +40,53 @@ function CustomLogin(){
         console.log('Login Success');
         localStorage.setItem('username', logininfo.username.value);
         alert("Login Success");
-        apigClient.currentUserGet(params, body, additionalParams)
-          .then(function (result) {
-            // Add success callback code here.
-            console.log("Result : ", result);
-            console.log('Get User Success');
-            localStorage.setItem('uid', JSON.stringify(result));
-            uid = JSON.stringify(result);
-        }).catch(function (result) {
-          // Add error callback code here.
-          console.log(result);
-        });
-        window.location.href = "home.html";
-      }).catch( function(result){
+      }).catch(function(result){
         // Add error callback code here.
         console.log(result);
       });
+
+    var params = {
+    };
+    var body = {
+    "username": logininfo.username.value
+    };
+    var additionalParams = {
+    };
+    apigClient.currentUserPost(params, body, additionalParams)
+    .then(function(result){
+      // Add success callback code here.
+      console.log("Result : ", result);
+      console.log('User Get Success');
+      localStorage.setItem('uid', result["data"]["userid"]);
+      window.location.href = "home.html";
+    }).catch(function(result){
+      // Add error callback code here.
+      console.log(result);
+    });
+};
+
+function CustomRegister(){
+    var registerinfo = document.getElementById("registerform");
+    console.log(registerinfo);
+    var params = {
+    };
+    var body = {
+    "username": registerinfo.username.value,
+    "email": registerinfo.email.value,
+    "password": registerinfo.password.value,
+    "confirm-password": registerinfo['confirm-password'].value
+    };
+    var additionalParams = {};
+    console.log('Try Register');
+    apigClient.registerPost(params, body, additionalParams)
+    .then(function(result){
+        console.log("Result : ", result);
+        console.log('Register Success');
+        window.location.href = "login_account.html";
+    }).catch( function(result){
+        // Add error callback code here.
+        console.log(result);
+    })
 };
 
 
