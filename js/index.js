@@ -3,6 +3,7 @@ var apigClient = apigClientFactory.newClient({
 });
 
 function Renderwelcome(){
+  Renderlogin();
   document.getElementById('welcome message').innerHTML = 'Welcome ' + localStorage.getItem('username') + '!';
 }
 
@@ -12,7 +13,7 @@ function Renderlogin(){
     document.getElementById('login').innerHTML = '<a href="/login_account.html"><button class="btn btn-outline-primary">Login</button></a>';
   }
   else{
-    document.getElementById('login').innerHTML = '<a href="javascript:Customlogout()">Logout</a>';
+    document.getElementById('login').innerHTML = '<a href="javascript:Customlogout()"><button class="btn btn-outline-primary">Logout</button></a>';
   }
 }
 
@@ -110,7 +111,13 @@ function Customlogout(){
             console.log(result);
         })
 }
-
+function AddProductOnload(){
+  Renderlogin();
+  if (localStorage.getItem('uid') == null){
+    alert("Please login first.");
+    window.location.href = "login_account.html";
+  }
+}
 function AddProduct() {
   product_info = document.getElementById("product-form");
   console.log(product_info.pname.value);
@@ -121,7 +128,8 @@ function AddProduct() {
     "retailer_link": product_info.retailer_link.value,
     "location": product_info.location.value,
     "description": product_info.description.value,
-    "price": product_info.price.value
+    "price": product_info.price.value,
+    "seller_id": localStorage.getItem('uid')
   };
   var additionalParams = {};
 
@@ -132,6 +140,16 @@ function AddProduct() {
       console.log("Result : ", result);
       console.log('Add product Success');
       // localStorage.setItem('username', logininfo.username.value);
+      
+      if (result["data"].includes("Price")) {
+        alert("Price should be at least $1.");
+        return;
+      }
+      else if (result["data"].includes("Location")) {
+        alert("Invalid Location.");
+        return;
+      }
+
       alert("Add Product Success");
       window.location.href = "get_product.html";
     }).catch(function (result) {
@@ -145,6 +163,9 @@ function RenderProductList(){
   console.log(product_list);
   for (idx in product_list){
     let prod = product_list[idx];
+    if (prod.sold){
+      continue;
+    }
     document.getElementById('product_list').innerHTML += 
     '<tr>'
     +'<td><a href="javascript:GetProductbyID('+prod.pid +')">' +prod.pname+' </a></td>'
@@ -154,16 +175,18 @@ function RenderProductList(){
             +'<td> '+ prod.price +' </td>'
               +'</tr>'             
   }
-  localStorage.removeItem('product_list');
+  document.getElementById("product_list").style.textTransform = "capitalize";
 }
 
 function RenderSearch_Ptype(){
+  Renderlogin();
   document.getElementById('title').innerHTML = 'Here is the result for ' +localStorage.getItem('ptype');
   console.log(localStorage.getItem('product_list'));
   RenderProductList();
 }
 
 function RenderSearch_Pname(){
+  Renderlogin();
   document.getElementById('title').innerHTML = 'Here is the result for ' +localStorage.getItem('pname');
   console.log("searching product_name:",localStorage.getItem('pname'));
   console.log(localStorage.getItem('product_list'));
@@ -194,18 +217,21 @@ function FetchbyName() {
   };
   var additionalParams = {};
 
-  console.log('Try Search Product');
+  console.log('Try Search Product:', product_info.pname.value);
   apigClient.searchPost(params, body, additionalParams)
     .then(function (result) {
       // Add success callback code here.
       console.log('Search product Success');
       console.log("Result : ", result);
       var data = result["data"];
-      console.log(data);
+      if (data.includes("NOT FOUND")){
+        alert("Product Not Found");
+        return;
+      }
       localStorage.setItem('product_list', JSON.stringify(data))
       localStorage.setItem('pname',body.pname)
       // alert("Search Product Success");
-      window.location.href = "search_pname.html";
+      // window.location.href = "search_pname.html";
     }).catch(function (result) {
       // Add error callback code here.
       console.log(result);
@@ -240,7 +266,6 @@ function GetProductbyID(pid) {
   var body = {};
   var additionalParams = {};
 
-  var uid = 0;
   var sid = 0;
 
   console.log('Try Get Product');
@@ -248,20 +273,6 @@ function GetProductbyID(pid) {
   localStorage.setItem('pid', pid);
   console.log('pid is', pid);
 
-  // apigClient.currentUserGet(params, body, additionalParams)
-  //   .then(function (result) {
-  //     // Add success callback code here.
-  //     console.log("Result : ", result);
-  //     console.log('Get User Success');
-  //     localStorage.setItem('uid', JSON.stringify(result));
-  //     uid = JSON.stringify(result);
-  // }).catch(function (result) {
-  //   // Add error callback code here.
-  //   console.log(result);
-  // });
-
-
-  localStorage.setItem('uid', uid);
 
   apigClient.getProductPidGet (params, body, additionalParams)
     .then(function (result) {
@@ -272,10 +283,15 @@ function GetProductbyID(pid) {
       localStorage.setItem('product', JSON.stringify(data));
       
       // TODO: get seller id
-      // sid = data['seller_id'];
+      sid = data['seller_id'];
       localStorage.setItem('sid', sid);
 
-      // window.location.href = "get_product.html";
+      if (data['sold'] == true) {
+        alert("Product Sold");
+        return;
+      }
+
+      window.location.href = "get_product.html";
     }).catch(function (result) {
       // Add error callback code here.
       console.log(result);
@@ -294,26 +310,34 @@ window.onload = function () {
 }
 
 function RenderProductDetail(prod, sid, uid) {
+  Renderlogin();
   if (uid == sid) {
-    localStorage.setItem('isSeller', true);
-    document.getElementById("delete").innerHTML = "Delete"
+    document.getElementById("delete").innerHTML = "Delete";
   }
   else {
-    localStorage.setItem("isSeller", false);
-    document.getElementById("delete").innerHTML = "Purchase"
+    document.getElementById("delete").innerHTML = "Purchase";
   }
-
+  // apigClient.getUserEmail({'uid': sid}, {}, {})
+  //   .then(function (result) {
+  //     console.log("Result : ", result);
+  //     console.log('Get seller email Success');
+  //     email = result['data'].email;});
+    
+  // document.getElementById("contact").innerHTML += email;
   document.getElementById("pname").innerHTML = prod['pname'];
+  document.getElementById("pname").style.textTransform = "capitalize";
   document.getElementById("ptype").innerHTML = prod.ptype;
-  document.getElementById("description").innerHTML = prod.description;
-  document.getElementById("location").innerHTML = prod.location;
-  document.getElementById("price").innerHTML = prod.price;
+  document.getElementById("ptype").style.textTransform = "capitalize";
+  document.getElementById("description").innerHTML += prod.description;
+  document.getElementById("location").innerHTML += prod.location;
+  document.getElementById("price").innerHTML += prod.price;
 }
 
 function GetProductDelete() {
-  isSeller = localStorage.getItem("isSeller");
+  seller_id = localStorage.getItem("sid");
+  uid = localStorage.getItem("uid");
   pid = localStorage.getItem("pid");
-  if (isSeller == false) { GetProductPurchase(pid); return; }
+  if (uid != seller_id) { GetProductPurchase(pid); return; }
 
   params = {'pid': pid};
   body = {};
