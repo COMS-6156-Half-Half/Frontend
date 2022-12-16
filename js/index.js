@@ -83,6 +83,7 @@ function CustomRegister(){
     .then(function(result){
         console.log("Result : ", result);
         console.log('Register Success');
+        alert("Register Success!");
         window.location.href = "login_account.html";
     }).catch( function(result){
         // Add error callback code here.
@@ -204,6 +205,27 @@ function RenderAllProduct(){
     }).catch(function (result) {
       console.log(result);
     });
+}
+
+function RenderMySellingProduct(){
+  Renderlogin();
+  console.log('Try Fetch My selling Product');
+  if (localStorage.getItem('uid') == null){
+    alert("Please login first.");
+    window.location.href = "login_account.html";
+  }
+  apigClient.sellerProductUidGet({'uid': localStorage.getItem('uid')}, {}, {})
+    .then(function (result) {
+      console.log("Result : ", result);
+      if (result["data"].includes("no product")){
+        alert("You have no selling product.");
+        return;
+      }
+      localStorage.setItem('product_list', JSON.stringify(result["data"]))
+      RenderProductList();
+    }).catch(function (result) {
+      console.log(result);
+    });
   
 }
 
@@ -243,12 +265,12 @@ function FetchbyType(ptype){
   var params = {'ptype': ptype
   };
   apigClient.searchPtypePtypeGet(params, {}, {})
-  // .then(function(response){
-  //   console.log(response);
-  //   console.log("Response is ok?", response.ok);
-  // })
   .then(function(result){
     var data = result["data"];
+    if (data.includes("NOT FOUND")){
+      alert("Product with type: '"+ptype+ "' Not Found");
+      return;
+    }
     localStorage.setItem('product_list', JSON.stringify(data))
     localStorage.setItem('ptype',ptype)
     console.log(data)
@@ -288,7 +310,6 @@ function GetProductbyID(pid) {
 
       if (data['sold'] == true) {
         alert("Product Sold");
-        return;
       }
 
       window.location.href = "get_product.html";
@@ -305,6 +326,27 @@ window.onload = function () {
 
   console.log('sid: ', sid)
   console.log('uid: ', uid)
+
+  var params = {  'pid': prod.pid  };
+  var body = {};
+  var additionalParams = {};
+
+  apigClient.getProductPidGet (params, body, additionalParams)
+    .then(function (result) {
+      // Add success callback code here.
+      console.log("Result : ", result);
+      console.log('Get product Success');
+      data = result['data']['data'][0];
+      // localStorage.setItem('product', JSON.stringify(data));
+
+      if (data['sold'] == true) {
+        alert("Product Sold");
+        // return;
+      }
+    }).catch(function (result) {
+      // Add error callback code here.
+      console.log(result);
+    });
   
   RenderProductDetail(prod, sid, uid);
 }
@@ -317,13 +359,25 @@ function RenderProductDetail(prod, sid, uid) {
   else {
     document.getElementById("delete").innerHTML = "Purchase";
   }
-  // apigClient.getUserEmail({'uid': sid}, {}, {})
-  //   .then(function (result) {
-  //     console.log("Result : ", result);
-  //     console.log('Get seller email Success');
-  //     email = result['data'].email;});
-    
-  // document.getElementById("contact").innerHTML += email;
+  console.log("This is prod:", prod)
+  if (prod['sold']) {
+    document.getElementById("delete").innerHTML = "Sold";
+    document.getElementById("delete").setAttribute("disabled", "");
+  }
+  apigClient.findUserPost({}, {"id": sid}, {})
+    .then(function(result){
+      // Add success callback code here.
+      console.log('Getting seller email:', result);
+      document.getElementById("contact").innerHTML += '<a href="mailto:'
+      +result["data"]["user_email"]
+      +'">'
+      +result["data"]["user_email"]
+      +'</a>';
+      
+    }).catch(function(result){
+      // Add error callback code here.
+      console.log(result);
+    });
   document.getElementById("pname").innerHTML = prod['pname'];
   document.getElementById("pname").style.textTransform = "capitalize";
   document.getElementById("ptype").innerHTML = prod.ptype;

@@ -32,14 +32,14 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-          <a class="navbar-brand" href="#">Half & Half</a>
+          <a class="navbar-brand" href="/index.html">Half & Half</a>
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="/home.html">Home</a>
-            </li>
             <li class="nav-item">
               <a class="nav-link" href="/search_product.html">
                 Get all products</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/selling_product.html"> My Selling Product</a>
             </li>
             <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
               <ul class="navbar-nav">
@@ -109,8 +109,8 @@
 
     <div class="card" style="width: 18rem;">
       <div class="card-body">
-        <h5 class="card-title" id="pname">Card title</h5>
-        <h6 class="card-subtitle mb-2 text-muted" id="ptype">Card subtitle</h6>
+        <h5 class="card-title" id="pname">Product name</h5>
+        <h6 class="card-subtitle mb-2 text-muted" id="ptype">Product type</h6>
         <button type="button" onclick="GetProductDelete()" id="delete" class="btn btn-outline-success">
           Delete
         </button>
@@ -122,30 +122,6 @@
         <li class="list-group-item" id="contact">Seller contact: </li>
       </ul>
     </div>
-
-    
-    
-
-    <!-- {% if prod == None %}
-    <h3>Current product was removed or does not exist.</h3>
-    {% else %}
-    <h3>Product Name: {{ prod.pname }}</h3>
-    <h3>Product Type: {{ prod.ptype }}</h3>
-    <h3>Description: {{ prod.description }}</h3>
-    <h3>Pickup Location: {{ prod.location }}</h3>
-    <h3>Price: {{ prod.price }}</h3> -->
-
-
-    <!-- {# {% if image != None %}#} {#
-    <h3>Image:</h3>
-    #} {# -->
-    <!-- <img src="data:image/gif;base64, {{ image }}" style="max-width: 30%; height: auto" />#} {# {% endif %}#} -->
-
-    <!-- <form method="post" enctype="multipart/form-data" action="/get_product/{{ pid }}">
-      <input type="hidden" name="distinction" value="1" />
-      <input type="submit" value="Remove" />
-    </form> -->
-    <!-- {% endif %} -->
 
     <hr />
     <p style="text-align: center"><a href="#top">Back to top</a></p>
