@@ -107,29 +107,24 @@
       <h2>Product Detailed Page</h2>
     </div>
 
-    <div>
-      <h3 style="display:inline;">Product Name: </h3>
-      <h3 id="pname" style="display:inline;"> None </h3>
+    <div class="card" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title" id="pname">Card title</h5>
+        <h6 class="card-subtitle mb-2 text-muted" id="ptype">Card subtitle</h6>
+        <button type="button" onclick="GetProductDelete()" id="delete" class="btn btn-outline-success">
+          Delete
+        </button>
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item" id="location">Location: </li>
+        <li class="list-group-item" id="price">Price: $</li>
+        <li class="list-group-item" id="description">Description: </li>
+        <li class="list-group-item" id="contact">Seller contact: </li>
+      </ul>
     </div>
-    <div>
-      <h3 style="display:inline;">Product Type: </h3>
-      <h3 id="ptype" style="display:inline;"> None </h3>
-    </div>
-    <div>
-      <h3 style="display:inline;">Description: </h3>
-      <h3 id="description" style="display:inline;"> None </h3>
-    </div>
-    <div>
-      <h3 style="display:inline;">Pickup Location: </h3>
-      <h3 id="location" style="display:inline;"> None </h3>
-    </div>
-    <div>
-      <h3 style="display:inline;">Price: </h3>
-      <h3 id="price" style="display:inline;"> None </h3>
-    </div>
-    <button type="button" onclick="GetProductDelete()" id="delete" class="btn btn-outline-success">
-      Delete
-    </button>
+
+    
+    
 
     <!-- {% if prod == None %}
     <h3>Current product was removed or does not exist.</h3>

@@ -19,10 +19,12 @@
   <script type="text/javascript" src="js/apiGateway-js-sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
   <script type="text/javascript" src="js/apiGateway-js-sdk/lib/apiGatewayCore/utils.js"></script>
   <script type="text/javascript" src="js/apiGateway-js-sdk/apigClient.js"></script>
+
+  <!-- <script type="text/javascript" src="js/smartystreets-javascript-sdk/index.js"></script> -->
   <script src="js/index.js"></script>
 </head>
 
-<body onload="GeneralOnload()">
+<body onload="AddProductOnload()">
   <div class="container">
     <nav class="navbar navbar-expand-lg bg-light">
       <div class="container-fluid">
@@ -133,7 +135,7 @@
       </div>
       <div class="mb-3">
         <label for="location" class="col-sm-2 col-form-label">Pickup location</label>
-        <input type="text" class="form-control" id="location" name="location" placeholder="e.g. 540 W 114th St" />
+        <input type="text" class="form-control" id="location" name="location" placeholder="e.g. 540 W 114th St, New York City, New York" />
       </div>
       <div class="mb-3">
         <label for="description" class="col-sm-2 col-form-label">Description</label>
