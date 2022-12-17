@@ -84,8 +84,24 @@
             <li class="nav-item">
               <a class="nav-link" href="/add_product.html"> Add product</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/orders.html"> Orders </a>
+            <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+              <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    Orders
+                  </a>
+                  <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <li>
+                      <a class="nav-link" onclick = 'RedirectOrders("seller")'> As Seller </a>
+                    </li>
+                    <li>
+                      <a class="nav-link" onclick = 'RedirectOrders("buyer")'> As Buyer </a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
           </ul>
           <div class="d-flex flex-row-reverse">
             <div class="p-2">
@@ -134,7 +150,7 @@
           placeholder="Retailer link (optional)" />
       </div>
       <div class="mb-3">
-        <label for="location" class="col-sm-2 col-form-label">Pickup location</label>
+        <label for="location" class="col-sm-2 col-form-label">Pickup location (Required)</label>
         <input type="text" class="form-control" id="location" name="location" placeholder="e.g. 540 W 114th St, New York City, New York" />
       </div>
       <div class="mb-3">

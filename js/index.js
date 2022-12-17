@@ -37,19 +37,33 @@ function CustomLogin(){
     apigClient.loginAccountPost(params, body, additionalParams)
       .then(function(result){
         // Add success callback code here.
-        console.log("Result : ", result);
-        console.log('Login Success');
-        localStorage.setItem('username', logininfo.username.value);
-        alert("Login Success");
+        if (result["data"].includes("user-not-found")){
+          alert("User not found. Please register first!");
+          window.location.href = "register.html";
+          return;
+        }else if (result["data"].includes("incorrect-password")){
+          alert("Incorrect password!");
+          window.location.href = "login_account.html";
+        }
+        else{
+          console.log("Result : ", result);
+          console.log('Login Success');
+          localStorage.setItem('username', logininfo.username.value);
+          setinfo(logininfo.username.value);
+          alert("Login Success");
+        };
+        
       }).catch(function(result){
         // Add error callback code here.
         console.log(result);
       });
+    };
 
+function setinfo(username){
     var params = {
     };
     var body = {
-    "username": logininfo.username.value
+    "username": username
     };
     var additionalParams = {
     };
@@ -81,10 +95,21 @@ function CustomRegister(){
     console.log('Try Register');
     apigClient.registerPost(params, body, additionalParams)
     .then(function(result){
+      if (result["data"].includes("Missing-fields")){
+        alert("Please have all fields filled.");
+        window.location.href = "register.html";
+        return;
+      }else if (result["data"].includes("User-or-email-exists")){
+        alert("User or email exists. Please also check if both password are the same.");
+        window.location.href = "register.html";
+
+      }else{
         console.log("Result : ", result);
         console.log('Register Success');
         alert("Register Success!");
         window.location.href = "login_account.html";
+      }
+
     }).catch( function(result){
         // Add error callback code here.
         console.log(result);
@@ -152,7 +177,7 @@ function AddProduct() {
       }
 
       alert("Add Product Success");
-      window.location.href = "get_product.html";
+      window.location.href = "selling_product.html";
     }).catch(function (result) {
     // Add error callback code here.
       alert("Add Product Failed");
@@ -161,6 +186,10 @@ function AddProduct() {
 };
 function RenderProductList(){
   product_list = JSON.parse(localStorage.getItem('product_list'));
+  if (product_list.includes("no product")){
+    alert("There is no product selling on the market");
+    return;
+  }
   console.log(product_list);
   for (idx in product_list){
     let prod = product_list[idx];
@@ -173,7 +202,7 @@ function RenderProductList(){
       +'<td><a href="javascript:FetchbyType('+"'"+prod.ptype+"'"+')">' +prod.ptype+' </a></td>'
         +'<td> '+prod.description +'</td>'
           +'<td> '+prod.location+'</td>'
-            +'<td> '+ prod.price +' </td>'
+            +'<td> $ '+ prod.price +' </td>'
               +'</tr>'             
   }
   document.getElementById("product_list").style.textTransform = "capitalize";
@@ -317,43 +346,45 @@ function GetProductbyID(pid) {
       // Add error callback code here.
       console.log(result);
     });
+
+  // RenderProductDetail(prod, sid);
 };
 
-window.onload = function () {
-  prod = JSON.parse(localStorage.getItem("product"));
-  sid = localStorage.getItem("sid");
-  uid = localStorage.getItem("uid");
+// window.onload = function () {
+//   prod = JSON.parse(localStorage.getItem("product"));
+//   sid = localStorage.getItem("sid");
+//   console.log('sid: ', sid)
 
-  console.log('sid: ', sid)
-  console.log('uid: ', uid)
+//   var params = {  'pid': prod.pid  };
+//   var body = {};
+//   var additionalParams = {};
 
-  var params = {  'pid': prod.pid  };
-  var body = {};
-  var additionalParams = {};
+//   apigClient.getProductPidGet (params, body, additionalParams)
+//     .then(function (result) {
+//       // Add success callback code here.
+//       console.log("Result : ", result);
+//       console.log('Get product Success');
+//       data = result['data']['data'][0];
+//       // localStorage.setItem('product', JSON.stringify(data));
 
-  apigClient.getProductPidGet (params, body, additionalParams)
-    .then(function (result) {
-      // Add success callback code here.
-      console.log("Result : ", result);
-      console.log('Get product Success');
-      data = result['data']['data'][0];
-      // localStorage.setItem('product', JSON.stringify(data));
-
-      if (data['sold'] == true) {
-        alert("Product Sold");
-        // return;
-      }
-    }).catch(function (result) {
-      // Add error callback code here.
-      console.log(result);
-    });
+//       if (data['sold'] == true) {
+//         alert("Product Sold");
+//         // return;
+//       }
+//     }).catch(function (result) {
+//       // Add error callback code here.
+//       console.log(result);
+//     });
   
-  RenderProductDetail(prod, sid, uid);
-}
+//   RenderProductDetail(prod, sid);
+// }
 
-function RenderProductDetail(prod, sid, uid) {
+function RenderProductDetail() {
+  prod = JSON.parse(localStorage.getItem("product"));
+  pid = localStorage.getItem("pid");
+  sid = localStorage.getItem("sid");
   Renderlogin();
-  if (uid == sid) {
+  if ( localStorage.getItem('uid')!=null && localStorage.getItem('uid') == sid) {
     document.getElementById("delete").innerHTML = "Delete";
   }
   else {
@@ -388,17 +419,18 @@ function RenderProductDetail(prod, sid, uid) {
 }
 
 function GetProductDelete() {
+  if (localStorage.getItem('uid') == null){
+    alert("Please login first.");
+    window.location.href = "login_account.html";
+  }
   seller_id = localStorage.getItem("sid");
   uid = localStorage.getItem("uid");
   pid = localStorage.getItem("pid");
   if (uid != seller_id) { GetProductPurchase(pid); return; }
 
-  params = {'pid': pid};
-  body = {};
-  additionalParams = {};
 
   console.log('Try Delete Product');
-  apigClient.getProductPidPost (params, body, additionalParams)
+  apigClient.getProductPidPost ({'pid': pid}, {'type': 'delete'}, {})
     .then(function (result) {
       // Add success callback code here.
       console.log("Result : ", result);
@@ -413,78 +445,121 @@ function GetProductDelete() {
 }
 
 function GetProductPurchase() {
-  console.log('Try Adding Product');
+  console.log('Try Purchasing Product');
+  body = {
+    "seller_id":localStorage.getItem("sid"),
+    "product_id":localStorage.getItem("pid"),
+    "buyer_id":localStorage.getItem("uid")
+  };
+  apigClient.getProductPidPost ({'pid': pid}, {'type': 'purchase'}, {})
+    .then(function (result) {
+      // Add success callback code here.
+      console.log("Result : ", result);
+      console.log('Set product.sold=True Success');
+    }
+    ).catch(function (result) {
+      // Add error callback code here.
+      console.log(result);
+    });
+  apigClient.apiRecordInsertPost({},body,{}).then(function (result) {
+    // Add success callback code here.
+    console.log("Result : ", result);
+    console.log('Craete order Success');
+    alert("Purchase Product Success");
+    RedirectOrders('buyer');
+  }).catch(function (result) {
+    // Add error callback code here.
+    console.log(result);
+  });
 }
-function RenderOrders(type){
+
+function RedirectOrders(type){
+  localStorage.setItem('type', type);
+  window.location.href = "orders.html";
+}
+
+function RenderOrders(){
   GeneralOnload();
+  if (localStorage.getItem('uid') == null){
+    alert("Please login first.");
+    window.location.href = "login_account.html";
+  }
   console.log('Try Get SellerId');
-  //var userId = apigClient.currentUserGet;
-  var user_id = 4;
+  var user_id = localStorage.getItem('uid');
+  // var user_id = 10;
   var body = {};
   var additionalParams = {};
-  
-  if (type=='seller') {
-    var params = {"seller_id":user_id};
-    console.log('Try Get Orders By SellerId');
-    apigClient.apiRecordSellerSellerIdGet (params, body, additionalParams)
-    .then(function (result) {
-    data = result["data"]
-    // Add success callback code here.
-    console.log("Result : ", result);
-    console.log('Get Orders Success');
-    // alert("Get Orders Success");
-    template = '<table class="table table-striped">'+
-                '<tr>'+
-                    '<th scope="col"><b> order_id </b></th>'+
-                    '<th scope="col"><b> product_id </b></th>'+
-                    '<th scope="col"><b> seller_id </b></th>'+
-                    '<th scope="col"><b> buyer_id </b></th>'+
-                '</tr>'+
-                '<tr>'
-    for (var p in data){
-        template += '<td>'+data[p].order_id+'</td>'+
-                '<td>'+data[p].product_id+'</td>'+
-                '<td>'+data[p].seller_id+'</td>'+
-                '<td>'+data[p].buyer_id+'</td>'
-    }
-    template += '</tr>'+
-            '</table>'
-    document.getElementById('orderByUserId').innerHTML = template;
-    }).catch(function (result) {
-    // Add error callback code here.
-    console.log(result);
-    });
-  }else{
-    var params = {"buyer_id":user_id};
-    console.log('Try Get Orders By BuyerId');
-    apigClient.apiRecordBuyerBuyerIdGet (params, body, additionalParams)
-    .then(function (result) {
-    data = result["data"]
-    // Add success callback code here.
-    console.log("Result : ", result);
-    console.log('Get Orders Success');
-    // alert("Get Orders Success");
-    template = '<table class="table table-striped">'+
-                '<tr>'+
-                    '<th scope="col"><b> order_id </b></th>'+
-                    '<th scope="col"><b> product_id </b></th>'+
-                    '<th scope="col"><b> seller_id </b></th>'+
-                    '<th scope="col"><b> buyer_id </b></th>'+
-                '</tr>'+
-                '<tr>'
-    for (var p in data){
-        template += '<td>'+data[p].order_id+'</td>'+
-                '<td>'+data[p].product_id+'</td>'+
-                '<td>'+data[p].seller_id+'</td>'+
-                '<td>'+data[p].buyer_id+'</td>'
-    }
-    template += '</tr>'+
-            '</table>'
-    document.getElementById('orderByUserId').innerHTML = template;
-    }).catch(function (result) {
-    // Add error callback code here.
-    console.log(result);
-    });
-  }
+  var params = {};
+  type = localStorage.getItem('type');
 
-}
+  if (type=='seller') {
+    var body = {"seller":user_id};
+    console.log('Try Get Orders By BuyerId');
+
+    apigClient.getOrdersBySellerPost(params, body, additionalParams)
+    .then(function (result) {
+      // Add success callback code here.
+      data = result["data"]
+      console.log(data)
+      // Add success callback code here.
+      console.log("Result : ", result);
+
+      template = '<h1> Your Selling Orders </h1>'+
+                  '<table class="table table-striped">'+
+                  '<tr>'+
+                      '<th scope="col"><b> order id </b></th>'+
+                      '<th scope="col"><b> product name </b></th>'+
+                      '<th scope="col"><b> buyer email </b></th>'+
+                  '</tr>'+
+                  '<tr>';
+      for (var p in data){
+          template += '<td>'+data[p].order_id+'</td>'+
+          '<td><a href="javascript:GetProductbyID('+data[p].pname.data[0].pid +')">' +data[p].pname.data[0].pname+' </a></td>'+
+          '<td><a href="mailto:'+data[p].buyer_email.user_email+'">'+data[p].buyer_email.user_email+'</a>'+'</td>'+
+          '</tr>';
+          }
+      template += '</tr>'+
+          '</table>'
+      document.getElementById('orderByUserId').innerHTML = template;
+    }
+    ).catch(function (result) {
+      // Add error callback code here.
+      console.log(result);
+    });
+  } else {
+    var body = {"buyer":user_id};
+    console.log('Try Get Orders By BuyerId');
+    apigClient.getOrdersByBuyerPost(params, body, additionalParams)
+    .then(function (result) {
+    data = result["data"]
+    // Add success callback code here.
+    console.log("Result : ", result);
+    // alert("Get Orders Success");
+    template = '<h1> Your Buying Orders </h1>'+
+                '<table class="table table-striped">'+
+                '<tr>'+
+                    '<th scope="col"><b> order id </b></th>'+
+                    '<th scope="col"><b> product name </b></th>'+
+                    '<th scope="col"><b> seller email </b></th>'+
+                '</tr>'+
+                '<tr>'
+    for (var p in data){
+        template += '<td>'+data[p].order_id+'</td>'+
+        '<td><a href="javascript:GetProductbyID('+data[p].pname.data[0].pid +')">' +data[p].pname.data[0].pname+' </a></td>'+
+        '<td><a href="mailto:'+data[p].seller_email.user_email+'">'+data[p].seller_email.user_email+'</a></td>'+
+        '</tr>';
+        }
+    template += '</tr>'+
+          '</table>'
+    document.getElementById('orderByUserId').innerHTML = template;
+    }).catch(function (result) {
+    // Add error callback code here.
+    console.log(result);
+    });
+  };
+
+  };
+
+
+
+
