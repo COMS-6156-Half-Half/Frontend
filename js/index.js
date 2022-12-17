@@ -415,3 +415,76 @@ function GetProductDelete() {
 function GetProductPurchase() {
   console.log('Try Adding Product');
 }
+function RenderOrders(type){
+  GeneralOnload();
+  console.log('Try Get SellerId');
+  //var userId = apigClient.currentUserGet;
+  var user_id = 4;
+  var body = {};
+  var additionalParams = {};
+  
+  if (type=='seller') {
+    var params = {"seller_id":user_id};
+    console.log('Try Get Orders By SellerId');
+    apigClient.apiRecordSellerSellerIdGet (params, body, additionalParams)
+    .then(function (result) {
+    data = result["data"]
+    // Add success callback code here.
+    console.log("Result : ", result);
+    console.log('Get Orders Success');
+    // alert("Get Orders Success");
+    template = '<table class="table table-striped">'+
+                '<tr>'+
+                    '<th scope="col"><b> order_id </b></th>'+
+                    '<th scope="col"><b> product_id </b></th>'+
+                    '<th scope="col"><b> seller_id </b></th>'+
+                    '<th scope="col"><b> buyer_id </b></th>'+
+                '</tr>'+
+                '<tr>'
+    for (var p in data){
+        template += '<td>'+data[p].order_id+'</td>'+
+                '<td>'+data[p].product_id+'</td>'+
+                '<td>'+data[p].seller_id+'</td>'+
+                '<td>'+data[p].buyer_id+'</td>'
+    }
+    template += '</tr>'+
+            '</table>'
+    document.getElementById('orderByUserId').innerHTML = template;
+    }).catch(function (result) {
+    // Add error callback code here.
+    console.log(result);
+    });
+  }else{
+    var params = {"buyer_id":user_id};
+    console.log('Try Get Orders By BuyerId');
+    apigClient.apiRecordBuyerBuyerIdGet (params, body, additionalParams)
+    .then(function (result) {
+    data = result["data"]
+    // Add success callback code here.
+    console.log("Result : ", result);
+    console.log('Get Orders Success');
+    // alert("Get Orders Success");
+    template = '<table class="table table-striped">'+
+                '<tr>'+
+                    '<th scope="col"><b> order_id </b></th>'+
+                    '<th scope="col"><b> product_id </b></th>'+
+                    '<th scope="col"><b> seller_id </b></th>'+
+                    '<th scope="col"><b> buyer_id </b></th>'+
+                '</tr>'+
+                '<tr>'
+    for (var p in data){
+        template += '<td>'+data[p].order_id+'</td>'+
+                '<td>'+data[p].product_id+'</td>'+
+                '<td>'+data[p].seller_id+'</td>'+
+                '<td>'+data[p].buyer_id+'</td>'
+    }
+    template += '</tr>'+
+            '</table>'
+    document.getElementById('orderByUserId').innerHTML = template;
+    }).catch(function (result) {
+    // Add error callback code here.
+    console.log(result);
+    });
+  }
+
+}
